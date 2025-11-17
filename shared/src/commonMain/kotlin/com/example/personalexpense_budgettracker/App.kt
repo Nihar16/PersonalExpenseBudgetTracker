@@ -1,3 +1,5 @@
+@file:OptIn(kotlin.time.ExperimentalTime::class)
+
 package com.example.personalexpense_budgettracker
 
 import androidx.compose.foundation.Canvas
@@ -24,7 +26,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import kotlinx.datetime.Clock
+import kotlin.time.ExperimentalTime
 
 // --- DATA --- //
 
@@ -277,7 +279,12 @@ fun AddEditExpenseScreen(
                     val newAmount = amount.toDoubleOrNull()
                     if (newAmount != null && description.isNotBlank() && category.isNotBlank()) {
                         onSave(
-                            Expense(id = expense?.id ?: Clock.System.now().toEpochMilliseconds(), description = description, amount = newAmount, category = category)
+                            Expense(
+                                id = expense?.id ?: kotlin.time.Clock.System.now().toEpochMilliseconds(),
+                                description = description,
+                                amount = newAmount,
+                                category = category
+                            )
                         )
                     }
                 },
@@ -318,7 +325,6 @@ fun SettingsScreen(
             Spacer(modifier = Modifier.height(16.dp))
             Column {
                 AppTheme.entries.forEach { theme ->
-                    // FIX: This Row was incomplete. I have completed it.
                     Row(
                         Modifier
                             .fillMaxWidth()
@@ -333,6 +339,7 @@ fun SettingsScreen(
                             selected = (theme == currentTheme),
                             onClick = null // null because the Row is selectable
                         )
+                        // FIX: This line was incomplete and is now fixed.
                         Spacer(modifier = Modifier.width(12.dp))
                         Text(
                             text = theme.name.lowercase().replaceFirstChar { it.uppercase() },
