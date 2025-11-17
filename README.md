@@ -1,3 +1,4 @@
+![PersonalExpenseBudgetTracker](https://socialify.git.ci/Nihar16/PersonalExpenseBudgetTracker/image?name=1&pattern=Circuit+Board&theme=Auto)
 # Personal Expense - Budget Tracker
 
 A cross-platform application to manage your personal finances, track expenses, and stick to your budget. Built with Kotlin Multiplatform and Compose Multiplatform, this app is available on Android, iOS, Desktop, and Web.
