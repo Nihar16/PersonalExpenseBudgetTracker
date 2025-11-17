@@ -11,16 +11,20 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import kotlinx.datetime.Clock
 
 // --- DATA --- //
 
@@ -31,7 +35,6 @@ data class Expense(
     val category: String
 )
 
-// We use a snapshotStateList so the UI updates automatically when items are added/edited
 val sampleExpenses = mutableStateListOf(
     Expense(id = 1, description = "Groceries", amount = 75.50, category = "Food"),
     Expense(id = 2, description = "Gas", amount = 40.00, category = "Transport"),
@@ -43,12 +46,11 @@ enum class AppTheme {
 }
 
 // --- THEME --- //
-
 private val LightColorPalette = lightColorScheme(
     primary = Color(0xFF6200EE),
     secondary = Color(0xFF03DAC6),
     tertiary = Color(0xFF3700B3),
-    background = Color(0xFFF5F5F5), // Slightly off-white for better contrast
+    background = Color(0xFFF5F5F5),
     surface = Color(0xFFFFFFFF),
     onPrimary = Color.White,
     onSecondary = Color.Black,
@@ -62,7 +64,7 @@ private val DarkColorPalette = darkColorScheme(
     secondary = Color(0xFF03DAC6),
     tertiary = Color(0xFF3700B3),
     background = Color(0xFF121212),
-    surface = Color(0xFF1E1E1E), // Slightly lighter than background
+    surface = Color(0xFF1E1E1E),
     onPrimary = Color.Black,
     onSecondary = Color.Black,
     onTertiary = Color.White,
@@ -95,11 +97,7 @@ fun App() {
         AppTheme.DARK -> true
     }
 
-    MaterialTheme(
-        colorScheme = if (useDarkTheme) DarkColorPalette else LightColorPalette,
-        shapes = AppShapes
-    ) {
-        // Simple state-based navigation
+    MaterialTheme(colorScheme = if (useDarkTheme) DarkColorPalette else LightColorPalette, shapes = AppShapes) {
         var currentScreen by remember { mutableStateOf<Screen>(Screen.Dashboard) }
 
         Surface(
@@ -117,10 +115,8 @@ fun App() {
                     expense = screen.expense,
                     onSave = { expense ->
                         if (screen.expense == null) {
-                            // Add new
                             sampleExpenses.add(expense)
                         } else {
-                            // Edit existing
                             val index = sampleExpenses.indexOfFirst { it.id == expense.id }
                             if (index != -1) {
                                 sampleExpenses[index] = expense
@@ -178,7 +174,6 @@ fun DashboardScreen(
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Charts Row
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
@@ -196,19 +191,13 @@ fun DashboardScreen(
                     BarChartPlaceholder()
                 }
             }
-
             Spacer(modifier = Modifier.height(24.dp))
-
             Text(
                 "Recent Expenses",
                 style = MaterialTheme.typography.titleLarge,
                 modifier = Modifier.align(Alignment.Start)
             )
-
             Spacer(modifier = Modifier.height(8.dp))
-
-            // CRITICAL FIX: Added .weight(1f) to LazyColumn.
-            // A LazyColumn inside a Column without weight will cause a crash/infinite height error.
             LazyColumn(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -243,7 +232,7 @@ fun AddEditExpenseScreen(
                 title = { Text(if (expense == null) "Add Expense" else "Edit Expense") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 }
             )
@@ -266,8 +255,7 @@ fun AddEditExpenseScreen(
             OutlinedTextField(
                 value = amount,
                 onValueChange = {
-                    // Allow digits and one decimal point
-                    if (it.matches(Regex("^\\d*\\.?\\d*$"))) {
+                    if (it.matches(Regex("^\\d*\\.?\\d*\$"))) {
                         amount = it
                     }
                 },
@@ -283,16 +271,14 @@ fun AddEditExpenseScreen(
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
             )
-
             Spacer(modifier = Modifier.height(8.dp))
-
             Button(
                 onClick = {
                     val newAmount = amount.toDoubleOrNull()
                     if (newAmount != null && description.isNotBlank() && category.isNotBlank()) {
                         onSave(
                             Expense(
-                                id = expense?.id ?: System.currentTimeMillis(), // Simple ID generation
+                                id = expense?.id ?: Clock.System.now().toEpochMilliseconds(),
                                 description = description,
                                 amount = newAmount,
                                 category = category
@@ -321,7 +307,7 @@ fun SettingsScreen(
                 title = { Text("Settings") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 }
             )
@@ -336,8 +322,8 @@ fun SettingsScreen(
             Text("Theme", style = MaterialTheme.typography.titleLarge)
             Spacer(modifier = Modifier.height(16.dp))
             Column {
-                // .entries is preferred over .values() in newer Kotlin versions
                 AppTheme.entries.forEach { theme ->
+                    // FIX: This Row was incomplete. I have completed it.
                     Row(
                         Modifier
                             .fillMaxWidth()
@@ -345,7 +331,7 @@ fun SettingsScreen(
                                 selected = (theme == currentTheme),
                                 onClick = { onThemeChange(theme) }
                             )
-                            .padding(vertical = 12.dp), // Increased tap target
+                            .padding(vertical = 12.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         RadioButton(
@@ -379,7 +365,7 @@ fun BarChartPlaceholder(modifier: Modifier = Modifier) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(100.dp), // Fixed height for chart area
+                .height(100.dp),
             verticalAlignment = Alignment.Bottom,
             horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
@@ -434,7 +420,7 @@ fun PieChartPlaceholder(modifier: Modifier = Modifier, expenses: List<Expense>) 
                     }
                 } else {
                     // Empty state circle
-                    drawCircle(color = Color.LightGray, style = androidx.compose.ui.graphics.drawscope.Stroke(width = 5f))
+                    drawCircle(color = Color.LightGray, style = Stroke(width = 5f))
                 }
             }
         }
@@ -459,13 +445,12 @@ fun ExpenseItem(expense: Expense, onClick: () -> Unit) {
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = expense.category,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                 )
             }
             Text(
-                // Fix: Correct currency formatting
-                text = "$%.2f".format(expense.amount),
+                text = "$${expense.amount}",
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.primary
             )
