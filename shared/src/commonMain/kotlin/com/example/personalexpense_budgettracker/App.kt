@@ -72,7 +72,7 @@ private val DarkColorPalette = darkColorScheme(
     onSurface = Color.White,
 )
 
-private val AppShapes = Shapes(
+private fun getAppShapes() = Shapes(
     small = RoundedCornerShape(4.dp),
     medium = RoundedCornerShape(8.dp),
     large = RoundedCornerShape(16.dp)
@@ -97,7 +97,7 @@ fun App() {
         AppTheme.DARK -> true
     }
 
-    MaterialTheme(colorScheme = if (useDarkTheme) DarkColorPalette else LightColorPalette, shapes = AppShapes) {
+    MaterialTheme(colorScheme = if (useDarkTheme) DarkColorPalette else LightColorPalette, shapes = getAppShapes()) {
         var currentScreen by remember { mutableStateOf<Screen>(Screen.Dashboard) }
 
         Surface(
@@ -277,12 +277,7 @@ fun AddEditExpenseScreen(
                     val newAmount = amount.toDoubleOrNull()
                     if (newAmount != null && description.isNotBlank() && category.isNotBlank()) {
                         onSave(
-                            Expense(
-                                id = expense?.id ?: Clock.System.now().toEpochMilliseconds(),
-                                description = description,
-                                amount = newAmount,
-                                category = category
-                            )
+                            Expense(id = expense?.id ?: Clock.System.now().toEpochMilliseconds(), description = description, amount = newAmount, category = category)
                         )
                     }
                 },
